@@ -193,18 +193,43 @@
   .service-panel{ background:var(--cream); padding:64px 0 96px;}
   .grid-5{ display:grid; grid-template-columns:repeat(5, 1fr); gap:18px;}
   .grid-4{ display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;}
+  .grid-3{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; }
   .svc-card, .grp-card{
     background:var(--paper); border-radius:18px; padding:26px 20px; border:1px solid var(--line);
     box-shadow:0 14px 30px -20px rgba(46,58,40,0.4);
     transition:transform .3s ease, box-shadow .3s ease;
+    display:flex; flex-direction:column;
   }
   .svc-card:hover, .grp-card:hover{ transform:translateY(-5px); box-shadow:0 20px 34px -18px rgba(46,58,40,0.45);}
   .svc-card .tag, .grp-card .tag{
     display:inline-block; font-size:11.5px; font-weight:700; color:var(--sage-dark);
-    background:var(--cream-2); padding:4px 10px; border-radius:999px; margin-bottom:14px;
+    background:var(--cream-2); padding:4px 10px; border-radius:999px; margin-bottom:14px; width:fit-content;
   }
   .svc-card h3, .grp-card h3{ font-size:17px; margin:0 0 8px; color:var(--pine-deep);}
-  .svc-card p, .grp-card p{ font-size:13.5px; color:rgba(46,58,40,0.7); margin:0;}
+  .svc-card p, .grp-card p{ font-size:13.5px; color:rgba(46,58,40,0.7); margin:0; flex-grow:1;}
+  .price-box{
+    margin-top:14px; padding-top:12px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--pine); line-height:1.6;
+  }
+  .price-box .amount{ font-weight:700; color:var(--gold); font-size:13.5px; }
+  .price-box .note{ display:block; color:rgba(46,58,40,0.55); font-size:11.5px; margin-top:2px; }
+  .price-line{ font-size:13px; color:var(--pine); }
+  .price-line b{ color:var(--gold); }
+  .footnote{ font-size:12px; color:rgba(46,58,40,0.6); margin-top:10px; line-height:1.6; }
+  .footnote a{ color:var(--sage-dark); font-weight:600; }
+
+  .assess-panel{
+    margin-top:18px; background:var(--paper); border-radius:18px; padding:30px 34px;
+    border:1px solid var(--line); box-shadow:0 14px 30px -20px rgba(46,58,40,0.4);
+  }
+  .assess-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+  .assess-head h3{ font-size:18px; margin:0; color:var(--pine-deep); font-family:var(--serif); font-weight:400; }
+  .assess-head .sub{ font-size:12.5px; color:rgba(46,58,40,0.6); }
+  .assess-list{ display:grid; grid-template-columns:1fr 1fr; gap:14px 32px; }
+  .assess-item{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding-bottom:12px; border-bottom:1px dashed var(--line); }
+  .assess-item h4{ font-size:14px; margin:0 0 4px; color:var(--ink); font-weight:700; }
+  .assess-item .desc{ font-size:11.5px; color:rgba(46,58,40,0.55); line-height:1.5; }
+  .assess-item .price{ font-size:15px; font-weight:700; color:var(--gold); white-space:nowrap; }
 
   .group-panel{ background:var(--cream-2); padding:64px 0 96px;}
 
@@ -352,6 +377,9 @@
     .polaroid{ max-width:320px; margin:0 auto;}
     .grid-5{ grid-template-columns:repeat(2, 1fr);}
     .grid-4{ grid-template-columns:repeat(2, 1fr);}
+    .grid-3{ grid-template-columns:repeat(2, 1fr);}
+    .assess-list{ grid-template-columns:1fr;}
+    .assess-panel{ padding:26px 22px;}
     nav.links{
       position:fixed; top:0; right:0; height:100vh; width:76%; max-width:320px;
       background:var(--paper); flex-direction:column; align-items:flex-start; justify-content:flex-start;
@@ -366,6 +394,7 @@
     section{ padding:76px 0;}
     .hero-inner{ padding:120px 0 64px;}
     .grid-5{ grid-template-columns:1fr 1fr;}
+    .grid-3{ grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -483,7 +512,7 @@
           </table>
           <h4>학력</h4>
           <table class="resume-table">
-            <tr><td>2025</td><td>건양사이버대학교 응용행동분석학과(심리운동치료학과 복수전공) 졸업</td></tr>
+            <tr><td>2025</td><td>건양사이버대학교 행동재활치료학과(심리운동치료학과 복수전공) 졸업</td></tr>
             <tr><td>2022</td><td>웨스트민스터신학대학원 상담심리학과 졸업 (석사 M.A.)</td></tr>
             <tr><td>2007</td><td>고려사이버대학교 사회복지학과(평생교육학과 부전공) 졸업</td></tr>
             <tr><td>1997</td><td>숭의여자대학교 유아교육학과 졸업</td></tr>
@@ -530,31 +559,79 @@
 </section>
 <div class="service-panel" id="counsel">
   <div class="wrap">
-    <div class="grid-5">
+    <div class="grid-4">
       <div class="svc-card reveal">
-        <span class="tag">50분 · 비대면</span>
+        <span class="tag">비대면</span>
         <h3>개인상담</h3>
         <p>아동·청소년·성인, Zoom으로 편안하게.</p>
+        <div class="price-box"><span class="price-line">상담시간 : 50분 / 비용 : <b>8만원</b></span></div>
       </div>
       <div class="svc-card reveal">
-        <span class="tag">80분 · 비대면</span>
+        <span class="tag">비대면</span>
         <h3>부부상담</h3>
         <p>두 사람의 속도를 존중하며 함께 걷습니다.</p>
+        <div class="price-box"><span class="price-line" style="white-space:nowrap; font-size:12px;">상담시간 : 80분 / 비용 : <b>12만원</b></span></div>
       </div>
       <div class="svc-card reveal">
-        <span class="tag">3세~초등 · 대면</span>
-        <h3>놀이치료</h3>
-        <p>공간을 마련해 아이의 언어인 놀이로 만납니다.</p>
+        <span class="tag">1:1 부모코칭</span>
+        <h3>부모 놀이코칭</h3>
+        <p>아이와 어떻게 놀아줘야 할지 막막하셨다면. 집에서 바로 쓸 수 있는 놀이치료적 방법과 태도를 알려드려요.
+        <span class="note" style="display:block; margin-top:6px;">심화반: CPRT 프로그램</span></p>
+        <div class="price-box"><span class="price-line">상담시간 : 50분 / 비용 : <b>8만원</b></span></div>
       </div>
       <div class="svc-card reveal">
         <span class="tag">가정방문</span>
-        <h3>ABA 홈티</h3>
+        <h3>ABA치료</h3>
         <p>ASD 아동을 위한 행동발달 지원을 가정에서.</p>
+        <div class="price-box">
+          <span class="price-line" style="display:block;">상담시간 : 50분(40분 ABA치료+10분 보호자상담)</span>
+          <span class="price-line" style="display:block; margin-top:2px;">비용 : <b>9만원</b></span>
+          <span class="note">가정방문 시 +2만원 추가</span>
+        </div>
       </div>
-      <div class="svc-card reveal">
-        <span class="tag">종합심리검사</span>
-        <h3>심리평가</h3>
-        <p>정확한 이해를 위한 검사와 보고서.</p>
+    </div>
+
+    <div class="assess-panel reveal">
+      <div class="assess-head">
+        <h3>심리평가 · 종합심리검사</h3>
+        <span class="sub">정확한 이해를 위한 해석상담 및 심리평가보고서 제공</span>
+      </div>
+      <div class="assess-list">
+        <div class="assess-item">
+          <div class="left">
+            <h4>청소년 종합심리검사</h4>
+            <div class="desc">K-WISC-V+MMPI-A+SCT+PAT+HTP·KFD·PITR 등, 해석상담 포함</div>
+          </div>
+          <div class="price">45만원</div>
+        </div>
+        <div class="assess-item">
+          <div class="left">
+            <h4>성인 종합심리검사</h4>
+            <div class="desc">K-WAIS-IV+MMPI-2+SCT+HTP·KFD·PITR 등, 해석상담 포함</div>
+          </div>
+          <div class="price">45만원</div>
+        </div>
+        <div class="assess-item">
+          <div class="left">
+            <h4>웩슬러 지능검사</h4>
+            <div class="desc">K-WISC-V or K-WAIS-IV, 해석상담 포함</div>
+          </div>
+          <div class="price">25만원</div>
+        </div>
+        <div class="assess-item">
+          <div class="left">
+            <h4>웩슬러 지능검사+학습전략검사</h4>
+            <div class="desc">K-WISC-V or K-WAIS-IV+MLST-II, 해석상담 포함</div>
+          </div>
+          <div class="price">28만원</div>
+        </div>
+        <div class="assess-item" style="border-bottom:none;">
+          <div class="left">
+            <h4>웩슬러+학습전략+진로적성</h4>
+            <div class="desc">WISC or WAIS+MLST+Holland, 해석상담 포함</div>
+          </div>
+          <div class="price">30만원</div>
+        </div>
       </div>
     </div>
   </div>
@@ -571,26 +648,64 @@
 </section>
 <div class="group-panel" id="group">
   <div class="wrap">
-    <div class="grid-4">
+    <div class="grid-3">
       <div class="grp-card reveal">
         <span class="tag">6~8인 · 비대면</span>
         <h3>자녀로 지친 부모 집단</h3>
         <p>소그룹으로 서로의 이야기를 나누며 회복합니다.</p>
+        <div class="price-box">
+          <span class="note" style="color:var(--gold); font-weight:700; font-size:12.5px;">만원의 만족감</span>
+          <span class="price-line">1회기 <b>1만원</b></span>
+          <span class="note">전체 회기 수는 주제에 따라 달라요</span>
+          <span class="note">모집 인원 6명 미만 시 다음 기수로 연기돼요</span>
+        </div>
       </div>
       <div class="grp-card reveal">
         <span class="tag">집단상담</span>
         <h3>애도 집단상담</h3>
-        <p>상실의 아픔, 함께 슬퍼하고 함께 일어나기.</p>
+        <p>준비되지 않은 반려가족의 죽음부터 소중한 사람의 죽음까지, 상실의 아픔은 크기를 잴 수 없어요. 함께 슬퍼하고 함께 일어나는 시간을 만들어갑니다.</p>
+        <div class="price-box">
+          <span class="price-line">8회기 <b>15만원</b></span>
+          <span class="note">모집 인원 5명 미만 시 다음 기수로 연기돼요</span>
+        </div>
       </div>
       <div class="grp-card reveal">
         <span class="tag">전문 강사 진행</span>
         <h3>트라우마·불안 집단</h3>
         <p>재난심리안정화 전문 강사가 함께합니다.</p>
+        <div class="price-box">
+          <span class="price-line">8회기 <b>15만원</b></span>
+          <span class="note">모집 인원 5명 미만 시 다음 기수로 연기돼요</span>
+        </div>
       </div>
       <div class="grp-card reveal">
-        <span class="tag">4주 · 온라인</span>
+        <span class="tag">온라인</span>
         <h3>부모교육 워크숍</h3>
-        <p>내 아이가 왜 이럴까, 함께 배우는 4주.</p>
+        <p>내 아이가 왜 이럴까, 함께 배우는 시간.</p>
+        <div class="footnote">
+          ※ 부모 놀이코칭과 달리, 아이 발달과 마음을 이해하는 전반적인 부모교육이에요. 실제 놀이 방법은 '부모 놀이코칭'에서 배우실 수 있어요.<br>
+          외부 강의 연락주세요 · <a href="mailto:poterk@naver.com">poterk@naver.com</a>
+        </div>
+      </div>
+      <div class="grp-card reveal">
+        <span class="tag">오전 5:30 · 독서모임 5년+</span>
+        <h3>아침을 여는 독서모임</h3>
+        <p>하루를 여는 아침, 책 한 권으로 마음을 채웁니다.</p>
+        <div class="price-box">
+          <span class="note" style="color:var(--gold); font-weight:700; font-size:12.5px;">만원의 만족감</span>
+          <span class="price-line" style="display:block; margin-top:4px;">매주 오전 5:30</span>
+          <span class="price-line" style="display:block; margin-top:2px;">1회기 <b>1만원</b></span>
+        </div>
+      </div>
+      <div class="grp-card reveal">
+        <span class="tag">오후 10:30 · 독서모임 5년+</span>
+        <h3>하루를 다독이는 한밤의 독서모임</h3>
+        <p>마음을 정리하며 잠드는 밤, 함께 읽고 나눕니다.</p>
+        <div class="price-box">
+          <span class="note" style="color:var(--gold); font-weight:700; font-size:12.5px;">만원의 만족감</span>
+          <span class="price-line" style="display:block; margin-top:4px;">매주 오후 10:30</span>
+          <span class="price-line" style="display:block; margin-top:2px;">1회기 <b>1만원</b></span>
+        </div>
       </div>
     </div>
   </div>
