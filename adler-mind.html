@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADLER MIND · 부모 상황 대응 가이드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg: #FAF6F1;
+    --bg-card: #FFFFFF;
+    --ink: #362E2C;
+    --ink-soft: #6E625D;
+    --line: #E9E1D8;
+
+    --c-burst: #E0876C;      /* 감정폭발 */
+    --c-burst-soft: #F6E2DA;
+    --c-separation: #6E9AA8; /* 분리·등원 */
+    --c-separation-soft: #DEEAEC;
+    --c-relation: #86A16A;   /* 관계 */
+    --c-relation-soft: #E4EBDC;
+    --c-habit: #CE9A34;      /* 생활습관 */
+    --c-habit-soft: #F3E7CC;
+    --c-trust: #93739B;      /* 신뢰 */
+    --c-trust-soft: #EBE1EE;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 20px 80px;
+  }
+
+  .wrap{ max-width: 880px; margin: 0 auto; }
+
+  /* Header */
+  .eyebrow{
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    font-weight: 600;
+    color: var(--c-separation);
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  h1{
+    font-family: 'Gowun Batang', serif;
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 40px);
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+  .lede{
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 15.5px;
+    line-height: 1.7;
+    max-width: 460px;
+    margin: 0 auto 36px;
+  }
+
+  /* Category filter */
+  .filters{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 34px;
+  }
+  .filter-chip{
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+    color: var(--ink-soft);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all .18s ease;
+  }
+  .filter-chip:hover{ border-color: var(--ink-soft); }
+  .filter-chip.active{
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  /* Grid */
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .card{
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 20px;
+    cursor: pointer;
+    text-align: left;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    display:flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -14px rgba(54,46,44,0.25);
+  }
+  .card:focus-visible{
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+  .icon-badge{
+    width: 46px; height: 46px;
+    border-radius: 13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-badge svg{ width: 24px; height: 24px; }
+
+  .card-cat{
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .card-title{
+    font-family: 'Gowun Batang', serif;
+    font-size: 18.5px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .card-sub{
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+
+  /* category color assignment via data-cat, set in JS as inline vars */
+
+  /* Detail overlay */
+  .overlay{
+    position: fixed; inset: 0;
+    background: rgba(54,46,44,0.42);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition: opacity .2s ease;
+    z-index: 50;
+    padding: 0;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  @media (min-width: 720px){
+    .overlay{ align-items:center; padding: 30px; }
+  }
+
+  .panel{
+    background: var(--bg-card);
+    width: 100%;
+    max-width: 620px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 24px 24px 0 0;
+    padding: 32px 28px 36px;
+    transform: translateY(24px);
+    transition: transform .25s ease;
+  }
+  .overlay.open .panel{ transform: translateY(0); }
+  @media (min-width: 720px){
+    .panel{ border-radius: 24px; }
+  }
+
+  .panel-top{
+    display:flex; align-items:flex-start; justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .panel-close{
+    border:none; background: var(--line); color: var(--ink);
+    width: 30px; height: 30px; border-radius: 50%;
+    font-size: 16px; cursor:pointer; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .panel-cat{
+    font-size: 12px; font-weight: 600; letter-spacing: .04em; margin-bottom: 8px;
+  }
+  .panel-title{
+    font-family: 'Gowun Batang', serif;
+    font-size: 24px; font-weight: 700; line-height: 1.4;
+  }
+  .panel-sub{
+    color: var(--ink-soft); font-size: 14.5px; margin-top: 6px; line-height: 1.6;
+  }
+
+  .section-label{
+    font-size: 12.5px; font-weight: 700; letter-spacing: .03em;
+    color: var(--ink-soft);
+    margin: 26px 0 10px;
+  }
+  .understanding{
+    font-size: 14.5px; line-height: 1.75; color: var(--ink);
+    background: var(--bg);
+    border-left: 3px solid var(--line);
+    padding: 14px 16px;
+    border-radius: 4px;
+  }
+  .script-list{ display:flex; flex-direction: column; gap: 10px; }
+  .script-line{
+    font-family: 'Gowun Batang', serif;
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--bg);
+    position: relative;
+  }
+  .script-line::before{
+    content: '“';
+    font-family: 'Gowun Batang', serif;
+    opacity: .35;
+    margin-right: 2px;
+  }
+  .script-line::after{
+    content: '”';
+    font-family: 'Gowun Batang', serif;
+    opacity: .35;
+  }
+  .tip{
+    font-size: 14px; line-height: 1.75; color: var(--ink-soft);
+  }
+
+  .theory-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    margin-top: 22px;
+    font-size: 12px; font-weight:600; color: var(--ink-soft);
+    background: var(--bg); border: 1px solid var(--line);
+    padding: 7px 12px; border-radius: 999px;
+    cursor:pointer; user-select:none;
+  }
+  .theory-badge:hover{ border-color: var(--ink-soft); }
+  .theory-badge .chevron{ display:inline-block; transition: transform .2s ease; font-size:9px; }
+  .theory-badge.open .chevron{ transform: rotate(180deg); }
+
+  .theory-panel{
+    max-height:0; overflow:hidden; opacity:0;
+    transition: max-height .25s ease, opacity .2s ease, margin .2s ease;
+  }
+  .theory-panel.open{ max-height: 260px; opacity:1; margin-top:10px; }
+  .theory-quote{
+    font-size: 12.5px; font-style: italic; line-height:1.6; color:var(--ink-soft);
+    border-left: 2px solid var(--line); padding-left:10px; margin-bottom:8px;
+  }
+  .theory-translation{ font-size:13.5px; line-height:1.65; color:var(--ink); margin-bottom:8px; }
+  .theory-source{ font-size:11px; color:var(--ink-soft); opacity:.75; }
+
+  /* CTA */
+  .cta{
+    margin-top: 56px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 22px;
+    padding: 38px 30px;
+    text-align: center;
+  }
+  .cta-eyebrow{
+    font-size: 12.5px; letter-spacing: .1em; opacity: .65; margin-bottom: 10px;
+  }
+  .cta h2{
+    font-family: 'Gowun Batang', serif;
+    font-size: 22px; line-height: 1.5; margin-bottom: 12px;
+  }
+  .cta p{
+    font-size: 14px; line-height: 1.7; opacity: .82; max-width: 420px; margin: 0 auto 22px;
+  }
+  .cta a{
+    display:inline-block;
+    background: #fff; color: var(--ink);
+    font-weight: 600; font-size: 14.5px;
+    padding: 12px 26px; border-radius: 999px;
+    text-decoration: none;
+  }
+
+  .footnote{
+    text-align:center; font-size: 12px; color: var(--ink-soft); opacity:.7;
+    margin-top: 22px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">ADLER MIND · 부모 상황 대응 가이드</div>
+  <h1>지금, 어떤 순간이신가요?</h1>
+  <p class="lede">겪고 있는 상황을 하나 골라보세요.<br>지금 이 순간 아이에게 건넬 수 있는 말을 알려드릴게요.</p>
+
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="cta">
+    <div class="cta-eyebrow">이 스크립트로도 풀리지 않는 마음이 있다면</div>
+    <h2>혼자 애쓰지 않으셔도 돼요</h2>
+    <p>같은 상황이라도 아이마다, 가정마다 다른 이야기가 있어요. 1:1 부모상담에서 지금 겪고 계신 상황을 더 깊이 들여다봐 드릴게요.</p>
+    <a href="mailto:poterk@naver.com?subject=%5B상담문의%5D%20ADLER%20MIND%20보고%20연락드려요">상담 문의하기</a>
+  </div>
+
+  <div class="footnote">아름다운심리상담연구소 · ADLER MIND</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="panel" id="panel"></div>
+</div>
+
+<script>
+/* ============================================================
+   상황 데이터
+   새로운 상황을 추가하려면 아래 situations 배열에 객체를 하나 추가하면 됩니다.
+   category는 categories 객체에 정의된 key 중 하나를 사용하세요.
+   새 카테고리가 필요하면 categories에 색상(main/soft)을 먼저 추가하세요.
+   ============================================================ */
+
+const categories = {
+  burst:      { label: '감정폭발',   color: 'var(--c-burst)',      soft: 'var(--c-burst-soft)' },
+  separation: { label: '분리·등원',  color: 'var(--c-separation)', soft: 'var(--c-separation-soft)' },
+  relation:   { label: '관계',       color: 'var(--c-relation)',   soft: 'var(--c-relation-soft)' },
+  habit:      { label: '생활습관',   color: 'var(--c-habit)',      soft: 'var(--c-habit-soft)' },
+  trust:      { label: '신뢰',       color: 'var(--c-trust)',      soft: 'var(--c-trust-soft)' },
+};
+
+const icons = {
+  burst: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>`,
+  door: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9v18H6z"/><path d="M15 12h5m-3-2 2 2-2 2"/><circle cx="12" cy="12" r=".6" fill="currentColor" stroke="none"/></svg>`,
+  hands: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="7" cy="8" r="2.6"/><circle cx="17" cy="8" r="2.6"/><path d="M7 12c-2 0-3.4 1.6-3.4 4v2M17 12c2 0 3.4 1.6 3.4 4v2M10.5 17h3"/></svg>`,
+  siblings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="9" r="3"/><circle cx="16" cy="12" r="2.4"/><path d="M4 20c0-3 2.2-5 5-5s5 2 5 5M14.5 20c.3-2 1.7-3.6 4-3.6s3.6 1.4 3.9 3.6"/></svg>`,
+  bowl: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16c0 4.5-3.6 8-8 8s-8-3.5-8-8Z"/><path d="M9 11c0-3 1.4-6 3-7.5C13.6 5 15 8 15 11"/></svg>`,
+  moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.4 6.4 0 0 0 10.5 10.5Z"/></svg>`,
+  phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>`,
+  speech: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 4V5Z"/><path d="M7.5 9.5c1-1 2-1 3 0s2 1 3 0 2-1 3 0"/></svg>`,
+  backpack: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="13" rx="3"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 12h6M9 16h4"/></svg>`,
+  hide: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9a2 2 0 0 1 2-2h2"/><circle cx="14" cy="8" r="2.6"/><path d="M10 21c0-3.5 2-6 4-6s4 2.5 4 6"/></svg>`,
+  exclude: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="8" r="2.4"/><circle cx="18" cy="8" r="2.4"/><circle cx="12" cy="9" r="2" stroke-dasharray="2 2"/><path d="M2 20c0-3 1.8-5 4-5s4 2 4 5M22 20c0-3-1.8-5-4-5s-4 2-4 5"/></svg>`,
+  scale: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8h14M5 8 2.5 13a3 3 0 0 0 5 0L5 8ZM19 8l-2.5 5a3 3 0 0 0 5 0L19 8Z"/></svg>`,
+  blocks: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="8.5" y="13" width="7" height="7" rx="1"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>`,
+  pocket: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14l1 12a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4L5 3Z"/><path d="M9 3v6a3 3 0 0 0 6 0V3"/></svg>`,
+};
+
+const theories = {
+  'landreth-act': {
+    name: 'Landreth · ACT 제한설정',
+    quote: null,
+    translation: '감정 인정(Acknowledge) → 제한 전달(Communicate) → 대안 제시(Target)의 3단계 제한설정 모델이에요.',
+    source: 'Landreth, G. L. (2002). Play Therapy: The Art of the Relationship. Brunner-Routledge.'
+  },
+  'bowlby-secure-base': {
+    name: 'Bowlby · 안전기지',
+    quote: 'Secure children are confident, using a parent as a secure base.',
+    translation: '안전하게 애착된 아이는 부모를 안전기지 삼아 자신 있게 세상을 탐험해요.',
+    source: 'Bowlby, J. (1988). A Secure Base. Basic Books.'
+  },
+  'mahler-separation': {
+    name: 'Mahler · 분리개별화',
+    quote: null,
+    translation: '분리는 독립의 시작이 아니라, 부모와의 관계 안에서 "나"로 태어나는 진정한 연결의 시작이에요.',
+    source: 'Mahler, M. S., Pine, F., & Bergman, A. (1975). The Psychological Birth of the Human Infant. Basic Books.'
+  },
+  'adler-encouragement': {
+    name: 'Adler · 격려',
+    quote: 'A misbehaving child is a discouraged child.',
+    translation: '문제행동을 보이는 아이는 사실 용기를 잃은 아이예요. 필요한 건 처벌이 아니라 격려예요.',
+    source: 'Adler, A. (1956). The Individual Psychology of Alfred Adler (H. L. Ansbacher & R. R. Ansbacher, Eds.). Harper.'
+  },
+  'winnicott-good-enough': {
+    name: 'Winnicott · 충분히 좋은 엄마',
+    quote: "Starts off with an almost complete adaptation to her infant's needs.",
+    translation: '충분히 좋은 엄마는 처음엔 아이 필요에 거의 맞춰주다가, 아이가 자랄수록 서서히 덜 맞춰줘요. 완벽하지 않아도 괜찮아요.',
+    source: 'Winnicott, D. W. (1953). Transitional Objects and Transitional Phenomena. Int. J. Psycho-Analysis, 34, 89–97.'
+  },
+  'winnicott-alone': {
+    name: 'Winnicott · 혼자 있는 능력',
+    quote: 'The experience of being alone while someone else is present.',
+    translation: '혼자 잘 있을 수 있는 능력은, 역설적으로 누군가 곁에 있는 상태에서 혼자 있어본 경험에서 자라요.',
+    source: 'Winnicott, D. W. (1958). The Capacity to Be Alone. Int. J. Psychoanalysis, 39, 416–420.'
+  },
+  'erikson-trust': {
+    name: 'Erikson · 기본신뢰',
+    quote: "An essential trustfulness of others and a fundamental sense of one's own trustworthiness.",
+    translation: '아이의 첫 과제는 세상을 믿는 것이에요. 그 믿음은 부모의 일관된 응답에서 만들어져요.',
+    source: 'Erikson, E. H. (1950). Childhood and Society. W. W. Norton.'
+  },
+  'rogers-unconditional': {
+    name: 'Rogers · 무조건적 긍정적 존중',
+    quote: 'Genuine willingness for the client to be whatever feeling is going on.',
+    translation: '그 순간 아이가 느끼는 감정이라면 두려움이든 분노든, 있는 그대로 받아줄 수 있어야 해요.',
+    source: 'Rogers, C. R. (1961). On Becoming a Person. Houghton Mifflin.'
+  },
+};
+
+const situations = [
+  {
+    id: 'tantrum',
+    category: 'burst',
+    icon: 'burst',
+    title: '마트·공공장소에서 떼쓰기',
+    subtitle: '장난감을 사달라며 바닥에 눕거나 소리를 질러요',
+    understanding: '지금 아이는 원하는 것을 못 받아들이는 게 아니라, 그 좌절감을 다룰 언어와 방법을 아직 갖지 못한 거예요.',
+    script: [
+      '지금 많이 속상하구나. 그 장난감 정말 갖고 싶었지.',
+      '오늘은 살 수 없어. 대신 집에 가서 네가 좋아하는 놀이 하자.',
+      '엄마(아빠)는 여기서 기다릴게. 준비되면 얘기해줘.'
+    ],
+    tip: '그 자리에서 설득하거나 화내지 말고, 감정이 가라앉을 때까지 곁에 머물러주세요. 이후에 왜 안 됐는지 짧게 다시 설명해줘도 좋아요.',
+    theory: 'landreth-act'
+  },
+  {
+    id: 'refuse-school',
+    category: 'separation',
+    icon: 'door',
+    title: '등원·등교 거부',
+    subtitle: '아침마다 안 가겠다고 울거나 버텨요',
+    understanding: '새로운 환경에 대한 불안이거나 집을 떠나는 것 자체에 대한 두려움일 수 있어요. 게으름이 아니에요.',
+    script: [
+      '가기 싫은 마음이 드는구나. 오늘 어떤 게 제일 걱정돼?',
+      '엄마(아빠)는 하원(하교) 시간에 꼭 데리러 올 거야.',
+      '오늘 하루도 잘 보내고 오면, 이따 만나서 얘기해줄래?'
+    ],
+    tip: '전날 밤 미리 마음의 준비를 시켜주고, 헤어질 때는 짧고 일관되게 인사하는 루틴을 만들어주세요. 질질 끄는 작별인사는 불안을 더 키울 수 있어요.',
+    theory: 'bowlby-secure-base'
+  },
+  {
+    id: 'separation-anxiety',
+    category: 'separation',
+    icon: 'hands',
+    title: '어린이집 앞에서 분리불안',
+    subtitle: '교실 문 앞까지 왔는데 팔을 붙잡고 놓지 않아요',
+    understanding: '낯선 곳에 혼자 남겨진다는 두려움이 몸으로 나타나는 거예요. 아이는 지금 최선을 다해 버티고 있는 중이에요.',
+    script: [
+      '여기까지 오는 것도 힘들었지. 잘 왔어.',
+      '선생님이 너를 기다리고 계셔. 엄마(아빠)는 이따 데리러 올게.',
+      '안아주고 인사하고 바로 갈게. 오래 있으면 더 힘들어져.'
+    ],
+    tip: '떠나기 힘들어도 헤어지는 순간을 짧고 확실하게 만드는 것이 아이의 불안을 오히려 줄여줘요. 몰래 사라지지 말고, 정직하게 인사하고 떠나세요.',
+    theory: 'mahler-separation'
+  },
+  {
+    id: 'sibling-conflict',
+    category: 'relation',
+    icon: 'siblings',
+    title: '형제·자매 갈등',
+    subtitle: '장난감이나 관심을 두고 계속 다퉈요',
+    understanding: '형제간 다툼은 대부분 "내가 덜 사랑받는 건 아닐까"라는 마음에서 시작돼요.',
+    script: [
+      '둘 다 화가 많이 났구나. 무슨 일이 있었는지 한 명씩 말해줄래?',
+      '누가 잘못했는지보다, 지금 어떻게 하면 좋을지 같이 생각해보자.',
+      '너희 둘 다 소중해. 순서를 정해서 번갈아 써보자.'
+    ],
+    tip: '누가 옳고 그른지 심판하려 하지 말고, 각자의 감정을 먼저 인정해준 다음 함께 해결책을 찾도록 도와주세요.',
+    theory: 'adler-encouragement'
+  },
+  {
+    id: 'picky-eating',
+    category: 'habit',
+    icon: 'bowl',
+    title: '편식',
+    subtitle: '특정 음식은 입에도 안 대려고 해요',
+    understanding: '새로운 맛과 질감에 대한 감각적 거부감일 수 있어요. 억지로 먹이면 음식에 대한 부정적 감정만 커져요.',
+    script: [
+      '이건 처음 보는 음식이라 낯설 수 있어. 냄새만 맡아볼까?',
+      '안 먹어도 괜찮아. 대신 식탁에는 같이 앉아있자.',
+      '다음에 또 만들어볼 테니, 그때 다시 보여줄게.'
+    ],
+    tip: '한 끼에 다 해결하려 하지 말고, 같은 음식을 부담 없이 여러 번 접하게 해주세요. 강요보다 반복 노출이 훨씬 효과적이에요.',
+    theory: 'winnicott-good-enough'
+  },
+  {
+    id: 'sleep-refusal',
+    category: 'habit',
+    icon: 'moon',
+    title: '잠자리 거부·수면불안',
+    subtitle: '혼자 자기 무섭다며 계속 안 자려고 해요',
+    understanding: '어둠과 혼자 있는 상황에 대한 두려움은 이 시기 아이들에게 흔한 발달 과정이에요.',
+    script: [
+      '무서운 마음이 드는구나. 오늘은 뭐가 제일 걱정돼?',
+      '이 방에 너 혼자가 아니야. 엄마(아빠)는 바로 옆방에 있어.',
+      '5분마다 한 번씩 문 열고 들여다볼게.'
+    ],
+    tip: '무섭다는 감정을 부정하지 말고, 작은 조명이나 좋아하는 인형처럼 안정감을 주는 물건을 곁에 두고 점진적으로 혼자 자는 연습을 도와주세요.',
+    theory: 'winnicott-alone'
+  },
+  {
+    id: 'screen-time',
+    category: 'habit',
+    icon: 'phone',
+    title: '스마트폰·게임 시간 다툼',
+    subtitle: '그만하라고 하면 화내거나 못 들은 척해요',
+    understanding: '몰입해 있던 것을 갑자기 멈추는 건 어른에게도 어려운 일이에요. 전환의 어려움이지, 반항이 아니에요.',
+    script: [
+      '지금 하는 거 재미있나 보다. 10분 뒤에 끝내는 거 어때?',
+      '이제 끝낼 시간이야. 지금 저장하고 끌 수 있게 도와줄까?',
+      '약속한 시간이 됐어. 다음에 또 할 수 있어.'
+    ],
+    tip: '끝내야 할 시간을 미리 예고해주고, 끝낸 뒤 할 일을 함께 정해두면 전환이 훨씬 수월해져요.',
+    theory: 'landreth-act'
+  },
+  {
+    id: 'lying',
+    category: 'trust',
+    icon: 'speech',
+    title: '거짓말',
+    subtitle: '안 했다고 하는데 사실이 아닌 걸 알아요',
+    understanding: '이 나이의 거짓말은 대부분 혼나는 게 두렵거나 원하는 걸 얻고 싶은 마음에서 나와요. 습관적 기만이 아니에요.',
+    script: [
+      '사실대로 말해도 너를 많이 혼내지 않을 거야.',
+      '지금 말한 거랑 다른 것 같은데, 다시 한번 생각해볼래?',
+      '솔직하게 말해줘서 고마워. 그게 훨씬 용기 있는 거야.'
+    ],
+    tip: '거짓말 자체보다 "왜 거짓말을 해야 했는지"에 초점을 맞추고, 솔직하게 말했을 때 안전하다는 경험을 반복해서 만들어주세요.',
+    theory: 'erikson-trust'
+  },
+  {
+    id: 'homework-rush',
+    category: 'habit',
+    icon: 'backpack',
+    title: '숙제·준비물 아침 실랑이',
+    subtitle: '아침마다 숙제나 준비물 챙기라고 말해도 계속 미뤄요',
+    understanding: '아이 입장에서 숙제는 지금 당장 급하게 느껴지지 않는 일이에요. 시간 감각과 우선순위를 조율하는 능력이 아직 자라는 중이에요.',
+    script: [
+      '아침에 급하게 챙기려니 마음이 바쁘겠다.',
+      '지금 5분 안에 챙길 것과 어제 못 챙긴 것, 같이 확인해보자.',
+      '내일부터는 자기 전에 미리 챙겨두는 걸 같이 정해볼까?'
+    ],
+    tip: '아침마다 잔소리로 반복하기보다, 전날 저녁 루틴에 준비물 체크 시간을 고정해서 넣어주세요. 습관은 아침이 아니라 전날 밤에 만들어져요.',
+    theory: 'adler-encouragement'
+  },
+  {
+    id: 'shy-new-place',
+    category: 'separation',
+    icon: 'hide',
+    title: '낯가림·새로운 환경 회피',
+    subtitle: '새로운 사람이나 낯선 장소에 가면 뒤로 숨거나 말을 안 해요',
+    understanding: '낯선 자극이 많을 때 조심스러워지는 건 기질적인 특성이에요. 사회성이 부족한 게 아니라, 적응하는 데 시간이 더 필요한 거예요.',
+    script: [
+      '처음 보는 곳이라 어색하지. 천천히 봐도 괜찮아.',
+      '오늘은 인사만 해도 충분해. 억지로 놀지 않아도 돼.',
+      '엄마(아빠) 옆에 있다가, 편해지면 그때 가까이 가보자.'
+    ],
+    tip: '억지로 인사시키거나 앞에 세우지 말고, 아이가 지켜볼 시간을 충분히 준 뒤 스스로 다가갈 때까지 기다려주세요.',
+    theory: 'bowlby-secure-base'
+  },
+  {
+    id: 'peer-exclusion',
+    category: 'relation',
+    icon: 'exclude',
+    title: '친구 관계에서 소외되거나 놀림받을 때',
+    subtitle: '친구들이 안 끼워주거나 놀렸다고 속상해해요',
+    understanding: '이 나이의 아이에게 또래 관계는 세상의 전부처럼 느껴져요. 별일 아닌 것 같아도 아이에게는 큰 상처일 수 있어요.',
+    script: [
+      '많이 속상했겠다. 그때 기분이 어땠어?',
+      '너는 아무 잘못 없어. 그런 일을 겪은 것뿐이야.',
+      '내일은 어떻게 하고 싶은지 우리 같이 생각해볼까?'
+    ],
+    tip: '바로 해결책부터 주지 말고 먼저 충분히 감정을 들어주세요. 그다음 아이 스스로 어떻게 하고 싶은지 물어보며 함께 방법을 찾아가세요. 이런 일이 반복되거나 오래 지속된다면 일회성 갈등이 아닐 수 있으니, 담임교사와 상황을 함께 확인해보세요.',
+    theory: 'rogers-unconditional'
+  },
+  {
+    id: 'sibling-favoritism',
+    category: 'relation',
+    icon: 'scale',
+    title: '형제 편애에 대한 불만',
+    subtitle: '"동생(형/누나)만 예뻐한다"며 서운해해요',
+    understanding: '아이는 사랑의 양보다 "공평함"에 훨씬 예민하게 반응해요. 실제로 편애가 없어도 이렇게 느낄 수 있어요.',
+    script: [
+      '서운한 마음이 들었구나. 어떤 순간에 그렇게 느꼈어?',
+      '네가 그렇게 느꼈다면, 그 마음은 진짜야. 엄마(아빠)가 더 신경 써볼게.',
+      '이번 주말엔 너랑 나만 하는 시간을 따로 만들어보자.'
+    ],
+    tip: '"똑같이 사랑해"라는 말보다, 각 아이와 단둘이 보내는 시간을 실제로 만들어 확인시켜주는 것이 훨씬 효과적이에요. 아이의 불공평 지각을 논리로 반박하지 말고, 먼저 그대로 인정해주세요.',
+    theory: 'adler-encouragement'
+  },
+  {
+    id: 'messy-room',
+    category: 'habit',
+    icon: 'blocks',
+    title: '정리정돈 안 하기',
+    subtitle: '장난감이나 방을 어질러놓고 치우지 않으려 해요',
+    understanding: '정리는 아이에게 추상적이고 막막한 일이에요. "치워"라는 말만으로는 무엇부터 해야 할지 알기 어려워요.',
+    script: [
+      '이걸 다 치우려니 막막하지.',
+      '장난감이랑 책, 두 가지로 나눠서 하나씩 담아볼까?',
+      '여기까지 했으면 오늘은 충분해. 나머지는 내일 같이 하자.'
+    ],
+    tip: '"방 치워"처럼 큰 지시보다 작은 단위로 쪼개서 구체적으로 제안해주세요. 다 못 끝내도 시작한 것 자체를 인정해주는 게 중요해요.',
+    theory: 'adler-encouragement'
+  },
+  {
+    id: 'slow-morning-prep',
+    category: 'habit',
+    icon: 'clock',
+    title: '등원 준비 늑장부리기',
+    subtitle: '옷 입기, 씻기 등 준비를 계속 미루고 딴짓해요',
+    understanding: '아이는 아직 시간 감각이 어른과 달라요. "늦었다"는 말이 몸으로 와닿지 않을 수 있어요.',
+    script: [
+      '지금 하던 거 더 하고 싶었구나.',
+      '옷 입는 데 5분 줄게. 시계가 여기 오면 끝내는 거야.',
+      '다 됐네. 오늘은 네가 스스로 준비했어.'
+    ],
+    tip: '재촉하는 말 대신 타이머나 시계처럼 눈에 보이는 도구를 활용하면 아이가 시간을 스스로 체감하는 데 도움이 돼요.',
+    theory: 'landreth-act'
+  },
+  {
+    id: 'stealing',
+    category: 'trust',
+    icon: 'pocket',
+    title: '물건을 몰래 가져오는 경우',
+    subtitle: '친구 물건이나 가게 물건을 허락 없이 가져와요',
+    understanding: '이 시기 아이는 아직 "내 것"과 "남의 것"의 경계, 그리고 소유의 규칙을 배우는 중이에요. 나쁜 아이라서가 아니에요.',
+    script: [
+      '이거 어디서 났는지 솔직하게 말해줄 수 있어?',
+      '이건 다른 사람 거니까, 같이 돌려주러 가자.',
+      '갖고 싶으면 다음엔 먼저 물어보거나 말해줘.'
+    ],
+    tip: '혼내거나 도둑이라고 낙인찍기보다, 돌려주는 과정을 함께 겪게 하면서 "허락받는 법"을 구체적으로 알려주세요. 다만 반복되거나 아이가 초등 고학년 이상인데도 계속된다면, 소유 개념 미숙을 넘어선 다른 신호일 수 있으니 상담 연계를 고려해주세요.',
+    theory: 'erikson-trust'
+  },
+];
+
+/* ============================================================
+   렌더링
+   ============================================================ */
+
+const grid = document.getElementById('grid');
+const filters = document.getElementById('filters');
+const overlay = document.getElementById('overlay');
+const panel = document.getElementById('panel');
+
+let activeFilter = 'all';
+
+function renderFilters(){
+  const all = [{key:'all', label:'전체'}, ...Object.entries(categories).map(([key,c]) => ({key, label:c.label}))];
+  filters.innerHTML = all.map(f => `
+    <button class="filter-chip ${f.key === activeFilter ? 'active' : ''}" data-key="${f.key}">${f.label}</button>
+  `).join('');
+  filters.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.key;
+      renderFilters();
+      renderGrid();
+    });
+  });
+}
+
+function renderGrid(){
+  const list = activeFilter === 'all' ? situations : situations.filter(s => s.category === activeFilter);
+  grid.innerHTML = list.map(s => {
+    const cat = categories[s.category];
+    return `
+      <button class="card" data-id="${s.id}" style="--cat-color:${cat.color}">
+        <div class="icon-badge" style="background:${cat.soft}; color:${cat.color}">${icons[s.icon]}</div>
+        <div>
+          <div class="card-cat" style="color:${cat.color}">${cat.label}</div>
+          <div class="card-title">${s.title}</div>
+        </div>
+        <div class="card-sub">${s.subtitle}</div>
+      </button>
+    `;
+  }).join('');
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => openDetail(card.dataset.id));
+  });
+}
+
+function openDetail(id){
+  const s = situations.find(x => x.id === id);
+  const cat = categories[s.category];
+  const th = theories[s.theory];
+  panel.innerHTML = `
+    <div class="panel-top">
+      <div>
+        <div class="panel-cat" style="color:${cat.color}">${cat.label}</div>
+        <div class="panel-title">${s.title}</div>
+        <div class="panel-sub">${s.subtitle}</div>
+      </div>
+      <button class="panel-close" aria-label="닫기">✕</button>
+    </div>
+
+    <div class="section-label">아이 마음 이해하기</div>
+    <div class="understanding">${s.understanding}</div>
+
+    <div class="section-label">지금 이렇게 말해보세요</div>
+    <div class="script-list">
+      ${s.script.map(line => `<div class="script-line">${line}</div>`).join('')}
+    </div>
+
+    <div class="section-label">그다음엔 이렇게 해보세요</div>
+    <div class="tip">${s.tip}</div>
+
+    ${th ? `
+    <div class="theory-badge" id="theoryToggle">
+      <span>${th.name}</span>
+      <span class="chevron">▾</span>
+    </div>
+    <div class="theory-panel" id="theoryPanel">
+      ${th.quote ? `<div class="theory-quote">"${th.quote}"</div>` : ''}
+      <div class="theory-translation">${th.translation}</div>
+      <div class="theory-source">출처: ${th.source}</div>
+    </div>
+    ` : ''}
+  `;
+  panel.querySelector('.panel-close').addEventListener('click', closeDetail);
+  const badge = panel.querySelector('#theoryToggle');
+  if(badge){
+    badge.addEventListener('click', () => {
+      badge.classList.toggle('open');
+      panel.querySelector('#theoryPanel').classList.toggle('open');
+    });
+  }
+  overlay.classList.add('open');
+}
+
+function closeDetail(){
+  overlay.classList.remove('open');
+}
+
+overlay.addEventListener('click', (e) => {
+  if(e.target === overlay) closeDetail();
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape') closeDetail();
+});
+
+renderFilters();
+renderGrid();
+</script>
+</body>
+</html>
